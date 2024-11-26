@@ -1,2 +1,3 @@
 # trendbnb
-Airbnb trend analysis
+<b>Airbnb trend analysis</b><br />
+CIS4301 Project
