@@ -10,6 +10,30 @@ import json
 from dash import Dash
 import dash_bootstrap_components as dbc
 
+# ======================================================================================================================
+# import non-standard library packages
+# ----------------------------------------------------------------------------------------------------------------------
+from sqlalchemy.engine import create_engine
+
+# ======================================================================================================================
+# import local packages
+# ----------------------------------------------------------------------------------------------------------------------
+from ..config.cred import USERNAME, PASSWORD
+
+DIALECT = 'oracle'
+SQL_DRIVER = 'cx_oracle'
+HOST = 'subdomain.domain.tld'
+PORT = 1521
+SERVICE = 'oracle_db_service_name'
+ENGINE_PATH = f"{DIALECT}+{SQL_DRIVER}://{USERNAME}:{PASSWORD}@{HOST}:{PORT}/?service_name={SERVICE}"
+engine = create_engine(ENGINE_PATH)
+
+# == test query ========================================================================================================
+import pandas as pd
+df = pd.read_sql_query('SELECT * FROM TABLE', engine)
+print(df.head())
+
+
 # -- theme template css ------------------------------------------------------------------------------------------------
 dbc_css = ("https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates@V1.0.2/dbc.min.css")
 
