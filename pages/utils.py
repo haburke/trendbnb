@@ -9,9 +9,57 @@ import json
 # ----------------------------------------------------------------------------------------------------------------------
 from dash import Dash
 import dash_bootstrap_components as dbc
+import oracledb
+import sqlalchemy as sa
+import pandas as pd
 
+<<<<<<< Updated upstream
+=======
+# ======================================================================================================================
+# import non-standard library packages
+# ----------------------------------------------------------------------------------------------------------------------
+from sqlalchemy.engine import create_engine
+
+# ======================================================================================================================
+# import local packages
+# ----------------------------------------------------------------------------------------------------------------------
+from config.cred import USERNAME, PASSWORD, HOST, SID
+
+username = USERNAME
+password = PASSWORD
+host = HOST
+port = 1521
+sid =  SID
+
+dsn = oracledb.makedsn(host, port, sid=sid)
+
+connection_string = f"oracle+oracledb://{username}:{password}@{host}:{port}/{sid}"
+
+engine = sa.create_engine(connection_string)
+
+try:
+    connection = engine.connect()
+
+    print("Successfully connected to the database.")
+
+    query = "SELECT COUNT(*) FROM Listing"
+
+    df = pd.read_sql(query, connection)
+    print(df)
+
+except oracledb.DatabaseError as e:
+    error, = e.args
+    print(f"Error Code: {error.code}")
+    print(f"Error Message: {error.message}")
+
+finally:
+    if connection:
+        connection.close()
+
+>>>>>>> Stashed changes
 
 # -- theme template css ------------------------------------------------------------------------------------------------
+'''
 dbc_css = ("https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates@V1.0.2/dbc.min.css")
 
 
@@ -43,3 +91,5 @@ def run_app(layout):
     app.run_server(host=args.host, port=args.port, debug=args.debug)
 
     return app
+
+'''
