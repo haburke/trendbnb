@@ -8,7 +8,7 @@ import dash_bootstrap_components as dbc
 # import local packages
 # ----------------------------------------------------------------------------------------------------------------------
 from pages.utils import dbc_css
-from .config.cred import USERNAME, PASSWORD
+from config.cred import USERNAME, PASSWORD
 
 # ======================================================================================================================
 # import non-standard library packages
