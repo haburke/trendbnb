@@ -9,33 +9,15 @@ import oracledb
 # ======================================================================================================================
 # import local packages
 # ----------------------------------------------------------------------------------------------------------------------
-<<<<<<< Updated upstream
 from pages.utils import dbc_css
 from config.cred import USERNAME, PASSWORD
-=======
 #from pages.utils import dbc_css
 from config.cred import USERNAME, PASSWORD, HOST, SID
->>>>>>> Stashed changes
 
 # ======================================================================================================================
 # import non-standard library packages
 # ----------------------------------------------------------------------------------------------------------------------
-<<<<<<< Updated upstream
-from sqlalchemy.engine import create_engine
 
-DIALECT = 'oracle'
-SQL_DRIVER = 'cx_oracle'
-HOST = 'subdomain.domain.tld'
-PORT = 1521
-SERVICE = 'oracle_db_service_name'
-ENGINE_PATH = f"{DIALECT}+{SQL_DRIVER}://{USERNAME}:{PASSWORD}@{HOST}:{PORT}/?service_name={SERVICE}"
-engine = create_engine(ENGINE_PATH)
-
-# == test query ========================================================================================================
-import pandas as pd
-df = pd.read_sql_query('SELECT * FROM TABLE', engine)
-print(df.head())
-=======
 username = USERNAME
 password = PASSWORD
 host = HOST
@@ -66,8 +48,6 @@ except oracledb.DatabaseError as e:
 finally:
     if connection:
         connection.close()
->>>>>>> Stashed changes
-
 # -- init dash ---------------------------------------------------------------------------------------------------------
 app = Dash(__name__,
            external_stylesheets=[dbc.themes.DARKLY, dbc.icons.BOOTSTRAP, 'assets/styles.css', dbc_css],
