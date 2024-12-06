@@ -3,6 +3,8 @@
 # ----------------------------------------------------------------------------------------------------------------------
 import os
 import json
+from pathlib import Path
+from configparser import ConfigParser
 
 # ======================================================================================================================
 # import dash library packages
@@ -13,6 +15,9 @@ import oracledb
 import sqlalchemy as sa
 import pandas as pd
 
+# -- theme template css ------------------------------------------------------------------------------------------------
+dbc_css = ("https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates@V1.0.2/dbc.min.css")
+
 # ======================================================================================================================
 # import non-standard library packages
 # ----------------------------------------------------------------------------------------------------------------------
@@ -21,38 +26,54 @@ from sqlalchemy.engine import create_engine
 # ======================================================================================================================
 # import local packages
 # ----------------------------------------------------------------------------------------------------------------------
-from config.cred import USERNAME, PASSWORD, HOST, SID
 
-username = USERNAME
-password = PASSWORD
-host = HOST
-port = 1521
-sid =  SID
+def get_data():
+    return [1, 2, 3], [4, 1, 2]
 
-dsn = oracledb.makedsn(host, port, sid=sid)
+def get_table():
+    df = pd.read_csv('https://raw.githubusercontent.com/plotly/datasets/master/solar.csv')
+    values = df.to_dict('records')
+    headers = [{"name": i, "id": i} for i in df.columns]
+    return values, headers
 
-connection_string = f"oracle+oracledb://{username}:{password}@{host}:{port}/{sid}"
+def get_config():
+    cfg_dir = Path(os.path.dirname(os.path.abspath(__file__))).parent/'config'
+    cfg = ConfigParser()
+    cfg.read(cfg_dir/'config.ini')
+    return cfg
 
-engine = sa.create_engine(connection_string)
+def db_func():
+    from config.cred import USERNAME, PASSWORD, HOST, SID
+    username = USERNAME
+    password = PASSWORD
+    host = HOST
+    port = 1521
+    sid =  SID
 
-try:
-    connection = engine.connect()
+    dsn = oracledb.makedsn(host, port, sid=sid)
 
-    print("Successfully connected to the database.")
+    connection_string = f"oracle+oracledb://{username}:{password}@{host}:{port}/{sid}"
 
-    query = "SELECT COUNT(*) FROM Listing"
+    engine = sa.create_engine(connection_string)
 
-    df = pd.read_sql(query, connection)
-    print(df)
+    try:
+        connection = engine.connect()
 
-except oracledb.DatabaseError as e:
-    error, = e.args
-    print(f"Error Code: {error.code}")
-    print(f"Error Message: {error.message}")
+        print("Successfully connected to the database.")
 
-finally:
-    if connection:
-        connection.close()
+        query = "SELECT COUNT(*) FROM Listing"
+
+        df = pd.read_sql(query, connection)
+        print(df)
+
+    except oracledb.DatabaseError as e:
+        error, = e.args
+        print(f"Error Code: {error.code}")
+        print(f"Error Message: {error.message}")
+
+    finally:
+        if connection:
+            connection.close()
 
 
 # -- theme template css ------------------------------------------------------------------------------------------------
