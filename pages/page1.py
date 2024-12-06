@@ -18,6 +18,7 @@ import dash_bootstrap_components as dbc
 # ----------------------------------------------------------------------------------------------------------------------
 from pages.components import *
 
+
 page_name = __file__.split("/")[-1].split(".py")[0]
 
 # -- customize simple navbar -------------------------------------------------------------------------------------------
@@ -28,11 +29,11 @@ set_active(navbar_main, page_name)
 # -- layout ------------------------------------------------------------------------------------------------------------
 layout = dbc.Container(
     [
-        header(page_info[page_name]["page-title"]),
         
         dbc.Card([ 
             navbar_main,
-        ], body=True, style={"margin": '200px'}), 
+        ], body=True, style={"margin": '20%', "margin-top": 50, 'border-color': "#111111", 'border-style': "solid", 
+                             'border-width': "1px", 'border-radius': 0}), 
 
     ], className="dbc", fluid=True)
 

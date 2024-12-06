@@ -1,0 +1,49 @@
+body {
+    overflow-x: hidden;
+}
+
+.dbc {
+    font-family: Computer Modern;
+}
+
+.nav-pills {
+    font-size: 1.2rem;
+    line-height: 1.3;
+}
+
+p {
+    margin-bottom: 1rem;
+}
+
+/* Headers */
+h1,
+h2,
+h4,
+h5,
+h6 {
+    margin-top: 0;
+    margin-bottom: 2rem;
+    font-weight: 300;
+}
+h1 {
+    font-size: 2rem;
+    line-height: 1.2;
+    letter-spacing: -0.1rem;
+    border-left: 5px solid #1f1f1f;
+    padding-left: 15px;
+    padding-top: 3px;
+}
+
+/* Home */
+.summary {
+    position: relative;
+    padding: 5px;
+    margin-bottom: 25px;
+    margin-top: 25px;
+    border-radius: 1px;
+    background: #868E96;
+}
+.summary h5 {
+    margin-bottom: 1rem;
+    font-size: 1.3rem;
+}

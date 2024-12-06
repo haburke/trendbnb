@@ -33,34 +33,56 @@ fig.update_layout(template="plotly_dark")
 navbar_main = deepcopy(navbar)
 set_active(navbar_main, page_name)
 
+layout = dbc.Container(
+    [
+        dbc.Card([ 
+            navbar_main,
+            
+            html.Div(
+                    [
+                        html.H5("Summary"),
+                        html.P(
+                    
+                            "By utilizing an extensive database with over 400,000 Airbnb listing records"
+                        ),
+                    ], className="summary"
+                ),
+
+        ], body=True, style={"margin": '20%', "margin-top": 50, 'border-color': "#111111", 'border-style': "solid", 
+                             'border-width': "1px", 'border-radius': 0}), 
+
+    ], className="dbc", fluid=True)
+    
 # -- layout ------------------------------------------------------------------------------------------------------------
 layout = dbc.Container(
     [
-        header(page_info[page_name]["page-title"]),
 
-        dbc.Card([ 
-            navbar_main,
-            html.Div([
-                dcc.Markdown(children='''
-                # About Trendbnb 
-                
-                ---
+        dbc.Card(
+            [ 
+                navbar_main,
 
-                ##### LINKS
-                * Database Source: 
+                html.Div(
+                    [
+                        html.H5("Summary"),
+                        html.P(
+                    
+                            "By utilizing an extensive database with over 400,000 Airbnb listings, this dashboard"
+                            "offers visualization of complex trends that can help inform hosts, real estate agents,"
+                            "property managers, and local legislators about Airbnb listing data. Our trend analysis"
+                            "provides insights into local markets."
+                        ),
+                    ], className="summary"
+                ),
 
-                ##### Project Contributors
+                # Dash Graph
+                dcc.Graph(figure=fig),
+                dcc.Graph(figure=fig),
 
-                ''')
-            ], style={'padding': '50px'}),
-            # Dash Graph
-            dcc.Graph(figure=fig),
-            dcc.Graph(figure=fig),
-
-            # Dash Table
-            dash_table.DataTable(values, headers),
+                # Dash Table
+                dash_table.DataTable(values, headers),
             
-        ], body=True, style={"margin": '200px', "margin-top":50, "border-bottom":0}), 
+            ], body=True, style={"margin": '20%', "margin-top": 50, 'border-color': "#111111", 'border-style': "solid", 
+                             'border-width': "1px", 'border-radius': 0}), 
 
     ], className="dbc", fluid=True)
 

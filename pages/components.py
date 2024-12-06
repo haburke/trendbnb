@@ -32,6 +32,7 @@ FOOTER_STYLE = {
     "right": 0,
     "height": 20,
 }
+
 # -- init templates ----------------------------------------------------------------------------------------------------
 templates = ["bootstrap", "cerulean", "cosmo", "cyborg", "darkly", "flatly", "journal", "litera",
              "lumen", "lux", "materia", "minty", "morph", "pulse", "quartz", "sandstone", "simplex",
@@ -44,18 +45,17 @@ cfg = get_config()
 # -- init pages --------------------------------------------------------------------------------------------------------
 page_info = {
     "home":{"id": "home-select", "href": "/", "page-title": "Home"},
-    "page1": {"id": "page1-select", "href": "/page1", "page-title": "page1"},
+    "page1": {"id": "page1-select", "href": "/page1", "page-title": "Page1"},
     "about": {"id": "about-select", "href": "/about", "page-title": "About"},
 }
-assets_dir = instant_client_path = Path(os.path.dirname(os.path.abspath(__file__))).parent/'assets'
 
 # -- navbar components -------------------------------------------------------------------------------------------------
 theme_button = ThemeChangerAIO(aio_id="theme", radio_props={"value": dbc.themes.DARKLY})
-bee_logo = html.Img(src=assets_dir/'bee_logo.png', alt="logo", height=40)
 nav_options = dbc.Nav([
     dbc.NavItem(dbc.NavLink(page_info[link]["page-title"],
                             href=page_info[link]["href"],
-                            id=page_info[link]["id"]), class_name='hover-pill') for link in page_info], class_name='nav-pills', style={'margin-top':150, 'margin-left': '36%'})
+                            id=page_info[link]["id"]), class_name='nav-pill') for link in page_info], 
+                            class_name='nav-pills', justified=True, style={'margin-top':150})
 contact_info = dbc.Row([
                             dbc.Col([
                                 html.P(
@@ -72,39 +72,24 @@ contact_info = dbc.Row([
                                     href="https://www.github.com"
                                 ),
                             ], style={'font-size': 12})
-                        ], style={'margin-left': 'auto', 'margin-right': 10})
-dk_bg = {'background-image': f'url({cfg["navbar"]["dark_bg"]})', 'height': 190, 'background-size': 'cover'}
-lt_bg = {'background-image': f'url({cfg["navbar"]["light_bg"]})', 'height': 190, 'background-size': 'cover'}
-navbar = dbc.Row([
-                dbc.Collapse(
-                    dbc.Row(
-                        dbc.Col(nav_options),
-                        style=dk_bg, id='nav'
-                    ),
-                    id='menu-collapse',
-                    is_open=True,
-                ),
-
-            ], id='main-navbar')
+                        ], style={'margin-left': "auto", 'margin-right': 10})
+dk_bg = {'background-image': f'url({cfg["navbar"]["dark_bg"]})', 'height': 190, 'background-size': "cover"}
+lt_bg = {'background-image': f'url({cfg["navbar"]["light_bg"]})', 'height': 190, 'background-size': "cover"}
+navbar = dbc.Row(
+                dbc.Col(nav_options, style={'margin-left': "20%", 'margin-right': "20%"}),
+                style=dk_bg, id="nav"
+                )
 
 
 def set_active(navbar_main, page_name):
-    for nav in navbar_main.children[0].children.children.children.children:
+    for nav in navbar_main.children.children.children:
         if nav.children.id == page_info[page_name]['id']:
             nav.children.active = True
-            nav.children.style = {"background-color": "var(--bs-dark)"}
+            nav.children.style = {'background-color': "var(--bs-dark)", 'border-bottom-left-radius': 0, 
+                                  'border-bottom-right-radius': 0}
         elif nav.children.id == 'login-select':
-            nav.children.style = {'display': 'none'}
+            nav.children.style = {'display': "none"}
     
-
-# -- header ------------------------------------------------------------------------------------------------------------
-def header(name):
-    title = html.H2(name, style={"margin-top": 5})
-    logo = html.Img(
-        src="./assets/logo.png", style={"float": "right", "height": 50}
-    )
-
-    return dbc.Row([dbc.Col(title, md=9), dbc.Col(logo, md=3)], style={"background-color":"var(--bs-dark)" })
 
 # -- footer ------------------------------------------------------------------------------------------------------------
 footer = html.Footer(theme_button, style=FOOTER_STYLE)
@@ -128,14 +113,3 @@ def update_nav_theme(theme):
         return dk_bg
     else:
         return lt_bg
-
-
-@callback(
-    Output("menu-collapse", "is_open"),
-    [Input("menu-collapse-button", "n_clicks")],
-    [State("menu-collapse", "is_open")],
-)
-def toggle_collapse_menu(n, is_open):
-    if n:
-        return not is_open
-    return is_open
