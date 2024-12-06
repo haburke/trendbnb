@@ -35,7 +35,7 @@ login_modal = dbc.Modal([
 # -- header ------------------------------------------------------------------------------------------------------------
 title = html.H3("Trendbnb")
 logo = html.Img(
-    src="./assets/bee_logo.png", style={"height": 50, "margin-top": 8, "margin-bottom": 8}
+    src="./assets/bee_logo.png", style={'height': 50, 'margin': "8px 0px 8px 15px"}
 )
 
 header = dbc.Row([
