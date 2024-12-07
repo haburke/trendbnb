@@ -19,13 +19,12 @@ import plotly.graph_objs as go
 # import local packages
 # ----------------------------------------------------------------------------------------------------------------------
 from pages.components import *
-from pages.utils import get_data, get_table
+from pages.utils import get_data, get_table, db_query
 
 page_name = "about"
 
 # -- plotly figs -------------------------------------------------------------------------------------------------------
 x, y = get_data()
-values, headers = get_table()
 fig = go.Figure(data=[go.Scatter(x=[1, 2, 3], y=[4, 1, 2])])
 fig.update_layout(template="plotly_dark")
 
@@ -42,7 +41,6 @@ layout = dbc.Container(
                     [
                         html.H5("Summary"),
                         html.P(
-                    
                             "By utilizing an extensive database with over 400,000 Airbnb listing records"
                         ),
                     ], className="summary"
@@ -74,13 +72,6 @@ layout = dbc.Container(
                     ], className="summary"
                 ),
 
-                # Dash Graph
-                dcc.Graph(figure=fig),
-                dcc.Graph(figure=fig),
-
-                # Dash Table
-                dash_table.DataTable(values, headers),
-            
             ], body=True, style={"margin": '20%', "margin-top": 50, 'border-color': "#111111", 'border-style': "solid", 
                              'border-width': "1px", 'border-radius': 0}), 
 

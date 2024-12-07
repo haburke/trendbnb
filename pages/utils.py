@@ -53,24 +53,24 @@ def db_query(query = None):
     dsn = oracledb.makedsn(host, port, sid=sid)
     connection_string = f"oracle+oracledb://{username}:{password}@{host}:{port}/{sid}"
     engine = sa.create_engine(connection_string)
-    connection = None
 
+    if query is None:
+        query = "SELECT COUNT(*) FROM Listing"
+    connection = None
     try:
         connection = engine.connect()
-        print("Successfully connected to the database.")
-        if query is None:
-            query = "SELECT COUNT(*) FROM Listing"
         df = pd.read_sql(query, connection)
-        print(df)
-
+        connection.close()
+        return df
     except oracledb.DatabaseError as e:
         error, = e.args
         print(f"Error Code: {error.code}")
         print(f"Error Message: {error.message}")
-
     finally:
         if connection:
             connection.close()
+
+
 
 
 # -- theme template css ------------------------------------------------------------------------------------------------
