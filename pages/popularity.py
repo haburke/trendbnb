@@ -56,57 +56,68 @@ set_active(navbar_main, page_name)
 
 layout = dbc.Container(
     [
-        dbc.Row(
-            [
-                dbc.Col(navbar_main, width=12)
-            ],
-            className="mb-4",
-        ),
-        dbc.Row(
-            [
-                dbc.Col(
-                    dbc.Card(
-                        dbc.CardBody(
-                            [
-                                html.H4("Popularity of Listings Over Time", className="card-title text-center"),
-                                html.P(
-                                    "Enter a city and select the number of years to visualize the popularity of Airbnb listings.",
-                                    className="card-text text-center",
-                                ),
-                                dbc.InputGroup(
-                                    [
-                                        dbc.Input(
-                                            id="city_input",
-                                            placeholder="Enter a city name...",
-                                            type="text",
-                                            style={"background-color": "#2c2f33", "color": "white", "border": "1px solid #444"},
-                                        ),
-                                        dbc.Select(
-                                            id="year_dropdown",
-                                            options=[{"label": f"{i} years", "value": i} for i in range(3, 11)],
-                                            value=5,  # Default value
-                                            style={"background-color": "#2c2f33", "color": "white", "border": "1px solid #444"},
-                                        ),
-                                        dbc.Button(
-                                            "Search",
-                                            id="search_button",
-                                            n_clicks=0,
-                                            color="primary",
-                                            style={"margin-left": "10px"}
-                                        ),
-                                    ],
-                                    style={"margin-bottom": "20px", "justify-content": "center"}
-                                ),
-                                dcc.Graph(id="popularity_graph"),
-                            ]
-                        ),
-                        className="shadow",
+        dbc.Card([
+            navbar_main,
+
+            # Summary Section
+            html.Div(
+                [
+                    html.H5("Description"),
+                    html.P(
+                        """
+                        This query calculates how many reviews Airbnb listings in a specific city received over the
+                         past few years. The user can select the number of years in which to review. This gives 
+                         insight into the popularity of Airbnb listings in that city over time.
+                        """
                     ),
-                    width=12,
-                )
-            ]
-        ),
+
+                    html.H5("Motivation"),
+                    html.P(
+                        """
+                        It offers valuable insights for Airbnb hosts, property managers, and analysts to understand 
+                        trends in listing popularity. They could determine if Airbnb is becoming more or less popular 
+                        in a city, and if there are specific years with spikes in activity, does it correlate with 
+                        special events. Superbowl, Olympics, etc.
+                        """
+                    )
+                ],
+                className="summary"
+            ),
+
+            # Input Fields and Graph
+            html.Div(
+                [
+                    dbc.InputGroup(
+                        [
+                            dbc.Input(
+                                id="city_input",
+                                placeholder="Enter a city name...",
+                                type="text",
+                                style={"background-color": "#2c2f33", "color": "white", "border": "1px solid #444"},
+                            ),
+                            dbc.Select(
+                                id="year_dropdown",
+                                options=[{"label": f"{i} years", "value": i} for i in range(3, 11)],
+                                value=5,  # Default value
+                                style={"background-color": "#2c2f33", "color": "white", "border": "1px solid #444"},
+                            ),
+                            dbc.Button(
+                                "Search",
+                                id="search_button",
+                                n_clicks=0,
+                                color="primary",
+                                style={"margin-left": "10px"}
+                            ),
+                        ],
+                        style={"margin-bottom": "20px", "justify-content": "center"},
+                    ),
+                    dcc.Graph(id="popularity_graph"),
+                ],
+            ),
+        ], body=True, style={"margin": '20%', "margin-top": 50, 'border-color': "#111111", 'border-style': "solid",
+                             'border-width': "1px", 'border-radius': 0}),
     ],
+    className="dbc",
     fluid=True,
 )
 
