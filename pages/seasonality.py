@@ -87,6 +87,7 @@ def update_graph(n_clicks, selected_city, selected_year):
                         WHERE 
                             L.City = :CityName
                             AND R.ReviewDate >= ADD_MONTHS(SYSDATE, -1 * :Year)
+                            AND R.ReviewDate < ADD_MONTHS(SYSDATE, (-1 * :Year)+12)
                         GROUP BY 
                             L.City, EXTRACT(MONTH FROM R.ReviewDate)
                     )
@@ -102,7 +103,8 @@ def update_graph(n_clicks, selected_city, selected_year):
         fig = px.scatter(title=f"No data was found. Please enter a different specifications for city or year.")
 
     else:
-        fig = px.line(data_frame=df, x=df['reviewmonth'], y=df['reviewcount'], title="Seasonality Trends Over Time")
+        fig = px.line(data_frame=df, x=df['reviewmonth'], y=df['reviewcount'], title="Seasonality Trends Over Time",
+                      labels={'reviewmonth': 'Review Month', 'reviewcount': 'Review Count'})
 
         fig.update_layout(
             xaxis=dict(

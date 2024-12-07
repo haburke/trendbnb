@@ -85,7 +85,8 @@ def update_graph(n_clicks, selected_city):
         fig = px.scatter(title=f"No data was found for the city: {selected_city}. Please enter a different one.")
 
     else:
-        fig = px.line(data_frame=df, x=df['registrationyear'], y=df['numberofhosts'], title="Number of Hosts Over Time")
+        fig = px.line(data_frame=df, x=df['registrationyear'], y=df['numberofhosts'], title="Number of Hosts Over Time",
+                      labels={'registrationyear': "Registration Year", 'numberofhosts': "Number of Hosts"})
 
         fig.update_layout(
             xaxis=dict(tickmode='linear', tick0=df['registrationyear'].min(), dtick=1),
