@@ -94,7 +94,8 @@ def update_graph(n_clicks, selected_city):
         fig = px.scatter(title=f"No data was found. Please enter a different specifications for city or year.")
 
     else:
-        fig = px.line(data_frame=df, x=df['pricerange'], y=df['averagerating'], title="Listing Price and Average Review Score Rating")
+        fig = px.line(data_frame=df, x=df['pricerange'], y=df['averagerating'], title="Listing Price and Average Review Score Rating",
+                      labels={'pricerange': 'Price Range', 'averagerating': 'Average Rating'})
 
         fig.update_layout(
             xaxis=dict(
