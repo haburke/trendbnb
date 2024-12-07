@@ -51,6 +51,7 @@ page_info = {
     "avgreviewprice": {"id": "avgreviewprice-select", "href": "/avgreviewprice", "page-title": "Price"},
     "cleanliness": {"id": "cleanliness-select", "href": "/cleanliness", "page-title": "Cleanliness"},
     "reviews": {"id": "reviews-select", "href": "/reviews", "page-title": "Reviews"},
+    "popularity": {"id": "popularity-select", "href": "/popularity", "page-title": "Popularity"},
 }
 
 # -- navbar components -------------------------------------------------------------------------------------------------
