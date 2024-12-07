@@ -178,16 +178,16 @@ def update_graph(cities, years, normalize):
 
     fig = px.line(data_frame=df_merged,
                   y=cities,
-                  title=f"Seasonality Trends Over Time {"(Normalized)" if normalize else ""}",)
+                  title=f"Seasonality Trends Over Time {'(Normalized)' if normalize else ''}",)
     fig.update_layout(template="plotly_dark",
                       showlegend=True,
                       xaxis={'title': "Month",
                              'tickmode': 'array',
-                             'tickvals': list(range(0, 11)),
+                             'tickvals': list(range(0, 12)),
                              'ticktext': ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
                                           'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
                              'tickangle': 45},
-                      yaxis={'title': f"Reviewed Listings {"[arb.]" if normalize else "[Count]"}",
+                      yaxis={'title': f"Reviewed Listings {'[arb.]' if normalize else '[Count]'}",
                              'tickformat': "%.0f" if normalize else ""},
                       )
     return fig
