@@ -11,9 +11,7 @@ from configparser import ConfigParser
 # ----------------------------------------------------------------------------------------------------------------------
 from dash import Dash
 import dash_bootstrap_components as dbc
-import oracledb
-import sqlalchemy as sa
-import pandas as pd
+
 
 # -- theme template css ------------------------------------------------------------------------------------------------
 dbc_css = ("https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates@V1.0.2/dbc.min.css")
@@ -21,7 +19,9 @@ dbc_css = ("https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates@V1.0.
 # ======================================================================================================================
 # import non-standard library packages
 # ----------------------------------------------------------------------------------------------------------------------
-from sqlalchemy.engine import create_engine
+import oracledb
+import sqlalchemy as sa
+import pandas as pd
 
 # ======================================================================================================================
 # import local packages

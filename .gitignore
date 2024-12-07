@@ -1,2 +1,4 @@
 /config/cred.py
 *.pyc
+/.venv1/
+/.idea/
