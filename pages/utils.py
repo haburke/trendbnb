@@ -26,6 +26,18 @@ import pandas as pd
 # ======================================================================================================================
 # import local packages
 # ----------------------------------------------------------------------------------------------------------------------
+from config.cred import USERNAME, PASSWORD, HOST, SID
+
+username = USERNAME
+password = PASSWORD
+host = HOST
+port = 1521
+sid = SID
+
+dsn = oracledb.makedsn(host, port, sid=sid)
+connection_string = f"oracle+oracledb://{username}:{password}@{host}:{port}/{sid}"
+engine = sa.create_engine(connection_string)
+
 
 def get_data():
     return [1, 2, 3], [4, 1, 2]
@@ -42,19 +54,7 @@ def get_config():
     cfg.read(cfg_dir/'config.ini')
     return cfg
 
-def db_query(query = None, params = None):
-    from config.cred import USERNAME, PASSWORD, HOST, SID
-    username = USERNAME
-    password = PASSWORD
-    host = HOST
-    port = 1521
-    sid =  SID
-
-    dsn = oracledb.makedsn(host, port, sid=sid)
-    connection_string = f"oracle+oracledb://{username}:{password}@{host}:{port}/{sid}"
-    engine = sa.create_engine(connection_string)
-    connection = None
-
+def db_query(engine, query = None, params = None):
     try:
         connection = engine.connect()
         print("Successfully connected to the database.")
@@ -62,17 +62,19 @@ def db_query(query = None, params = None):
             query = "SELECT COUNT(*) FROM Listing"
 
         df = pd.read_sql(query, connection, params=params)
-
+        connection.close()
+        del connection
+        del engine
         return df
 
     except oracledb.DatabaseError as e:
         error, = e.args
         print(f"Error Code: {error.code}")
         print(f"Error Message: {error.message}")
+    except sa.exc.DatabaseError as e:
+        print(f"Error Code: {e}")
 
-    finally:
-        if connection:
-            connection.close()
+
 
 
 # -- theme template css ------------------------------------------------------------------------------------------------

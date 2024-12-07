@@ -19,7 +19,7 @@ import plotly.graph_objs as go
 # import local packages
 # ----------------------------------------------------------------------------------------------------------------------
 from pages.components import *
-from pages.utils import get_data, get_table, db_query
+from pages.utils import get_data, get_table, db_query, engine
 
 page_name = "reviews"
 

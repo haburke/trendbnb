@@ -9,19 +9,59 @@ from copy import deepcopy
 from dash import register_page, html, dcc, Input, Output, callback
 import dash_bootstrap_components as dbc
 import plotly.express as px
-import sqlalchemy as sa
 
 # ======================================================================================================================
 # import non-standard library packages
 # ----------------------------------------------------------------------------------------------------------------------
+import numpy as np
+import pandas as pd
+import sqlalchemy as sa
 
 # ======================================================================================================================
 # import local packages
 # ----------------------------------------------------------------------------------------------------------------------
 from pages.components import *
-from pages.utils import db_query
+from pages.utils import db_query, engine
 
+
+# -- helper functions --------------------------------------------------------------------------------------------------
+def get_review_cities():
+    df = db_query(engine, """
+                  WITH ReviewData AS (
+            SELECT 
+                L.City AS City
+            FROM 
+                Listing L
+                INNER JOIN Review R ON L.ListingID = R.ListingID
+                INNER JOIN DetailedReview DR ON R.ListingID = DR.ListingID
+        )
+        SELECT City, COUNT(City) AS Count
+        FROM ReviewData
+        GROUP BY City
+        ORDER BY COUNT(City) DESC
+                  """)
+    return df
+
+
+def get_review_years():
+    df = db_query(engine,
+                  """
+                SELECT
+                    DISTINCT EXTRACT(YEAR FROM ReviewDate) AS YEAR
+                FROM
+                    Review
+                ORDER BY YEAR
+                  """)
+    return df
+
+
+def norm(array):
+    return (array-array.min())/(array.max()-array.min())
+
+
+# -- register page -----------------------------------------------------------------------------------------------------
 page_name = "seasonality"
+register_page(__name__, path=page_info[page_name]["href"])
 
 # -- customize simple navbar -------------------------------------------------------------------------------------------
 navbar_main = deepcopy(navbar)
@@ -30,99 +70,112 @@ set_active(navbar_main, page_name)
 # -- layout ------------------------------------------------------------------------------------------------------------
 layout = dbc.Container(
     [
-        navbar_main,  # Place the navbar outside the input group
-        # Input group for city search
-        dbc.InputGroup(
-            [
-                dbc.Input(
-                    id="city_input_2",
-                    placeholder="Enter a city name here...",
-                    type="text",
-                    style={"width": "50%"}
-                ),
-                dbc.Button(
-                    "Search",
-                    id="city_search_button_2",
-                    n_clicks=0,
-                    color="primary",
-                    style={"margin-left": "10px"}
-                ),
-            ],
-            style={"margin-bottom": "20px"}
-        ),
-        dcc.Dropdown(id='year_dropdown_1',
-             options=[
-                      {'label': '2012', 'value': (15*12)},
-                      {'label': '2013', 'value': (14*12)},
-                      {'label': '2014', 'value': (13*12)},
-                      {'label': '2015', 'value': (12*12)},
-                      {'label': '2016', 'value': (11*12)},
-                      {'label': '2017', 'value': (10*12)},
-                      {'label': '2018', 'value': (9*12)},
-                      {'label': '2019', 'value': (8*12)},
-                      {'label': '2020', 'value': (7*12)},
-                      {'label': '2021', 'value': (6*12)}],
-             value="2017",
-             style={'width': "50%"}),
-        # Graph for displaying results
-        dcc.Graph(id="seasonality_graph"),
+        dbc.Card([
+            navbar_main,
+
+            # Summary Div
+            html.Div(
+                [
+                    html.H5("Summary"),
+                    html.P(
+                        "This plot shows how many new users were added each month over the last several years."
+                    ),
+                ], className="summary"
+            ),
+
+            # Graph for displaying results
+            dcc.Loading(
+                dcc.Graph(id="seasonality_graph"),
+            ),
+
+            # City Select
+            html.Div("Select Cities"),
+            dcc.Dropdown(id='city-select',
+                         options=get_review_cities().city,
+                         multi=True,
+                         clearable=True,
+                         value=["Paris", "Brooklyn"]),
+
+            # Year Select
+            html.Div("Select Years"),
+            dcc.Dropdown(id='year-select',
+                         options=get_review_years().year,
+                         multi=True,
+                         clearable=False,
+                         value=[2020, 2021]),
+
+            # Normalize Select
+            dcc.Checklist(
+                id='normalize',
+                options=[{'label': 'Normalize (MinMax)', 'value': 'norm'}],
+                value=[]
+            ),
+
+        ], body=True, style={"margin": '20%', "margin-top": 50, 'border-color': "#111111", 'border-style': "solid",
+                             'border-width': "1px", 'border-radius': 0}),
     ], className="dbc", fluid=True)
 
+
 @callback(Output("seasonality_graph", "figure"),
-        [Input("city_search_button_2", "n_clicks")],
-        [State("city_input_2", "value")],
-         [Input("year_dropdown_1", "value")]
+          [Input("city-select", "value"),
+           Input("year-select", "value"),
+           Input("normalize", "value")],
           )
-def update_graph(n_clicks, selected_city, selected_year):
-    if not selected_city:
-        selected_city = "Paris"
-    query = sa.text("""WITH MonthlyReviewData AS (
-                        SELECT 
-                            L.City,
-                            EXTRACT(MONTH FROM R.ReviewDate) AS ReviewMonth,
-                            COUNT(R.ReviewID) AS ReviewCount
-                        FROM 
-                            "ANDREW.GOLDSTEIN".Review R
-                            INNER JOIN "ANDREW.GOLDSTEIN".Listing L ON R.ListingID = L.ListingID
-                        WHERE 
-                            L.City = :CityName
-                            AND R.ReviewDate >= ADD_MONTHS(SYSDATE, -1 * :Year)
-                            AND R.ReviewDate < ADD_MONTHS(SYSDATE, (-1 * :Year)+12)
-                        GROUP BY 
-                            L.City, EXTRACT(MONTH FROM R.ReviewDate)
-                    )
-                    SELECT ReviewMonth, ReviewCount
-                    FROM MonthlyReviewData
-                    ORDER BY ReviewMonth DESC
-                    """)
+def update_graph(cities, years, normalize):
+    normalize = len(normalize) > 0
+    query = sa.text("""
+    WITH MonthlyReviewData AS (
+        SELECT 
+            L.City,
+            EXTRACT(MONTH FROM R.ReviewDate) AS ReviewMonth,
+            COUNT(R.ReviewID) AS ReviewCount
+        FROM 
+            Review R
+            INNER JOIN Listing L ON R.ListingID = L.ListingID
+        WHERE 
+            L.City = :CityName
+            AND R.ReviewDate >= ADD_MONTHS(SYSDATE, -1 * :Year)
+            AND R.ReviewDate < ADD_MONTHS(SYSDATE, (-1 * :Year)+12)
+        GROUP BY 
+            L.City, EXTRACT(MONTH FROM R.ReviewDate)
+    )
+    SELECT ReviewMonth, ReviewCount
+    FROM MonthlyReviewData
+    ORDER BY ReviewMonth DESC
+    """)
+    dfs = []
+    for city in cities:
+        months = None
+        reviews = None
+        for year in years:
+            params = {"CityName": city, "Year": (2027-year)*12}
+            df = db_query(engine, query, params)
+            if months is None:
+                months = df.reviewmonth
+            if reviews is None:
+                reviews = [df.reviewcount]
+            else:
+                reviews.append(df.reviewcount)
 
-    params = {"CityName":selected_city, "Year":selected_year}
-    df = db_query(query, params)
+        df_city = pd.DataFrame({"Month": months,
+                                city: norm(np.nansum(reviews, axis=0)) if normalize else np.nanmean(reviews, axis=0)})
+        dfs.append(df_city)
+    df_merged = dfs[0]
+    for df_ in dfs[1:]:
+        df_merged = df_merged.merge(df_, on="Month", how="outer")
 
-    if df.empty:
-        fig = px.scatter(title=f"No data was found. Please enter a different specifications for city or year.")
-
-    else:
-        fig = px.line(data_frame=df, x=df['reviewmonth'], y=df['reviewcount'], title="Seasonality Trends Over Time",
-                      labels={'reviewmonth': 'Review Month', 'reviewcount': 'Review Count'})
-
-        fig.update_layout(
-            xaxis=dict(
-                tickmode='array',
-                tickvals=list(range(1, 13)),
-                ticktext=['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                          'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-            ),
-            yaxis=dict(tickmode='linear', tick0=df['reviewcount'].min(), dtick=500)
-        )
-
-    fig.update_layout(template="plotly_dark")
+    fig = px.line(data_frame=df_merged,
+                  y=cities,
+                  title=f"Seasonality Trends Over Time {"(Normalized)" if normalize else ""}",)
+    fig.update_layout(template="plotly_dark",
+                      showlegend=True,
+                      xaxis={'title': "Month",
+                             'tickmode': 'array',
+                             'tickvals': list(range(0, 11)),
+                             'ticktext': ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                                          'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                             'tickangle': 45},
+                      yaxis={'title': f"Reviewed Listings {"[arb.]" if normalize else "[Count]"}",
+                             'tickformat': "%.0f" if normalize else ""},
+                      )
     return fig
-
-if __name__ == '__main__':
-    from utils import run_app
-
-    app = run_app(layout=layout)
-else:
-    register_page(__name__, path=page_info[page_name]["href"])
-

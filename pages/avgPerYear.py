@@ -20,7 +20,7 @@ import sqlalchemy as sa
 # import local packages
 # ----------------------------------------------------------------------------------------------------------------------
 from pages.components import *
-from pages.utils import get_data, get_table, db_query 
+from pages.utils import get_data, get_table, db_query, engine
 
 page_name = "avgPerYear"
 city_name = "Amsterdam"
@@ -74,7 +74,7 @@ navbar_main = deepcopy(navbar)
 set_active(navbar_main, page_name)
 
 #db_query(avgPerYearQuery(city_name))
-db_query(avgPerYearQuery(city_name))
+# db_query(avgPerYearQuery(city_name))
 
 
 
@@ -182,7 +182,7 @@ def update_graph(n_clicks, selected_city):
         """)
 
     params = {"CityName":selected_city}
-    df = db_query(query, params)
+    df = db_query(engine, query, params)
     print(df)
     if df.empty:
         #change the title

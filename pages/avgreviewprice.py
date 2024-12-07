@@ -19,9 +19,23 @@ import sqlalchemy as sa
 # import local packages
 # ----------------------------------------------------------------------------------------------------------------------
 from pages.components import *
-from pages.utils import db_query
+from pages.utils import db_query, engine
 
+
+# -- helper functions --------------------------------------------------------------------------------------------------
+def get_listing_cities():
+    df = db_query(engine, """
+        SELECT City, COUNT(City) AS Count
+        FROM Listing
+        GROUP BY City
+        ORDER BY COUNT(City) DESC
+                  """)
+    return df
+
+
+# -- register page -----------------------------------------------------------------------------------------------------
 page_name = "avgreviewprice"
+register_page(__name__, path=page_info[page_name]["href"])
 
 # -- customize simple navbar -------------------------------------------------------------------------------------------
 navbar_main = deepcopy(navbar)
@@ -30,37 +44,39 @@ set_active(navbar_main, page_name)
 # -- layout ------------------------------------------------------------------------------------------------------------
 layout = dbc.Container(
     [
-        navbar_main,  # Place the navbar outside the input group
-        # Input group for city search
-        dbc.InputGroup(
-            [
-                dbc.Input(
-                    id="city_input_3",
-                    placeholder="Enter a city name here...",
-                    type="text",
-                    style={"width": "50%"}
-                ),
-                dbc.Button(
-                    "Search",
-                    id="city_search_button_3",
-                    n_clicks=0,
-                    color="primary",
-                    style={"margin-left": "10px"}
-                ),
-            ],
-            style={"margin-bottom": "20px"}
-        ),
-        # Graph for displaying results
-        dcc.Graph(id="avg_review_price_graph"),
+        dbc.Card([
+            navbar_main,
+
+            html.Div(
+                [
+                    html.H5("Summary"),
+                    html.P(
+                        "This plot shows how many new users were added each month over the last several years."
+                    ),
+                ], className="summary"
+            ),
+            # Reviews
+            dcc.Loading(
+                dcc.Graph(id="avg_review_price_graph"),
+            ),
+
+            # City Select
+            html.Div("Select Cities"),
+            dcc.Dropdown(id='city-select',
+                         options=get_listing_cities().city,
+                         multi=True,
+                         clearable=True,
+                         value=["London", "Paris"]),
+        ], body=True, style={"margin": '20%', "margin-top": 50, 'border-color': "#111111", 'border-style': "solid",
+                             'border-width': "1px", 'border-radius': 0}),
+
     ], className="dbc", fluid=True)
 
+
 @callback(Output("avg_review_price_graph", "figure"),
-        [Input("city_search_button_3", "n_clicks")],
-        [State("city_input_3", "value")]
+          [Input("city-select", "value")],
           )
-def update_graph(n_clicks, selected_city):
-    if not selected_city:
-        selected_city = "Paris"
+def update_graph(cities):
     query = sa.text("""WITH ListingReviews AS (
                     SELECT l.ListingID, l.City, l.DailyPrice, AVG(dr.Rating) AS AverageRating
                     FROM Listing l
@@ -87,8 +103,8 @@ def update_graph(n_clicks, selected_city):
                 ORDER BY PriceRange
                     """)
 
-    params = {"CityName":selected_city}
-    df = db_query(query, params)
+    params = {"CityName": cities[0]}
+    df = db_query(engine, query, params)
 
     if df.empty:
         fig = px.scatter(title=f"No data was found. Please enter a different specifications for city or year.")
@@ -108,10 +124,3 @@ def update_graph(n_clicks, selected_city):
 
     fig.update_layout(template="plotly_dark")
     return fig
-
-if __name__ == '__main__':
-    from utils import run_app
-
-    app = run_app(layout=layout)
-else:
-    register_page(__name__, path=page_info[page_name]["href"])

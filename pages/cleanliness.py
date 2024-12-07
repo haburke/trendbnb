@@ -19,7 +19,7 @@ import sqlalchemy as sa
 # import local packages
 # ----------------------------------------------------------------------------------------------------------------------
 from pages.components import *
-from pages.utils import db_query
+from pages.utils import db_query, engine
 
 page_name = "cleanliness"
 
@@ -84,7 +84,7 @@ def update_graph(n_clicks, selected_country):
                     """)
 
     params = {"CountryName":selected_country}
-    df = db_query(query, params)
+    df = db_query(engine, query, params)
 
     if df.empty:
         fig = px.scatter(title=f"No data was found for the country: {selected_country}.")
