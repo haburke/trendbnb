@@ -21,7 +21,7 @@ import sqlalchemy as sa
 from pages.components import *
 from pages.utils import db_query
 
-page_name = "page1"
+page_name = "cleanliness"
 
 # -- customize simple navbar -------------------------------------------------------------------------------------------
 navbar_main = deepcopy(navbar)
@@ -35,14 +35,14 @@ layout = dbc.Container(
         dbc.InputGroup(
             [
                 dbc.Input(
-                    id="city_input",
-                    placeholder="Enter a city name here...",
+                    id="country_input_1",
+                    placeholder="Enter a country name here...",
                     type="text",
                     style={"width": "50%"}
                 ),
                 dbc.Button(
                     "Search",
-                    id="city_search_button",
+                    id="country_search_button_1",
                     n_clicks=0,
                     color="primary",
                     style={"margin-left": "10px"}
@@ -50,47 +50,58 @@ layout = dbc.Container(
             ],
             style={"margin-bottom": "20px"}
         ),
-        # Graph for displaying results
-        dcc.Graph(id="num_host_graph"),
+        dcc.Graph(id="cleanliness_graph"),
     ], className="dbc", fluid=True)
 
-@callback(Output("num_host_graph", "figure"),
-        [Input("city_search_button", "n_clicks")],
-        [State("city_input", "value")]
+@callback(Output("cleanliness_graph", "figure"),
+        [Input("country_search_button_1", "n_clicks")],
+        [State("country_input_1", "value")],
           )
-def update_graph(n_clicks, selected_city):
-    if not selected_city:
-        selected_city = "Paris"
-    query = sa.text("""WITH HostData AS (
-        SELECT 
-            H.HostID,
-            EXTRACT(YEAR FROM H.HostSince) AS RegistrationYear,
-            L.City
-        FROM 
-            "ANDREW.GOLDSTEIN".Host H
-            INNER JOIN "ANDREW.GOLDSTEIN".Listing L ON H.HostID = L.HostID
-        WHERE 
-            L.City = :CityName
-    )
-    SELECT RegistrationYear, COUNT(DISTINCT HostID) AS NumberOfHosts
-    FROM HostData
-    WHERE RegistrationYear >= EXTRACT(YEAR FROM SYSDATE) - 10
-    GROUP BY RegistrationYear
-    ORDER BY RegistrationYear""")
+def update_graph(n_clicks, selected_country):
+    if not selected_country:
+        selected_city = "France"
+    query = sa.text(""" WITH CleanYears AS(
+                    SELECT EXTRACT(YEAR FROM l.FirstReview) AS Year, AVG(d.Cleanliness) AS CleanAvg
+                    FROM "ANDREW.GOLDSTEIN".Listing l
+                    JOIN "ANDREW.GOLDSTEIN".DetailedReview d ON l.ListingID=d.ListingID
+                    WHERE Country=:CountryName AND d.Cleanliness IS NOT NULL AND l.LastReview IS NOT NULL
+                    GROUP BY EXTRACT(YEAR FROM l.FirstReview)),
+                    
+                    CleanChange AS(
+                    SELECT Year, CleanAvg, 
+                    LAG(CleanAvg) OVER (ORDER BY Year) AS PrevYearCleanAvg
+                    FROM CleanYears)
+                    
+                    SELECT Year, ROUND(CleanAvg, 2) AS CleanAvg, 
+                    CASE
+                        WHEN PrevYearCleanAvg IS NOT NULL THEN
+                            ROUND((CleanAvg - PrevYearCleanAvg) / PrevYearCleanAvg * 100, 2)
+                        ELSE
+                            0
+                        END AS PercentageChange
+                    FROM CleanChange
+                    ORDER BY Year
+                    """)
 
-    params = {"CityName":selected_city}
+    params = {"CountryName":selected_country}
     df = db_query(query, params)
 
     if df.empty:
-        fig = px.scatter(title=f"No data was found for the city: {selected_city}. Please enter a different one.")
+        fig = px.scatter(title=f"No data was found for the country: {selected_country}.")
 
     else:
-        fig = px.line(data_frame=df, x=df['registrationyear'], y=df['numberofhosts'], title="Number of Hosts Over Time",
-                      labels={'registrationyear': "Registration Year", 'numberofhosts': "Number of Hosts"})
+        fig = px.bar(data_frame=df, x=df['year'], y=df['cleanavg'], title="Cleanliness Change Over Time",
+                     labels={'year': 'Year', 'cleanavg': 'Average Cleanliness'})
+
+        fig.add_scatter(x=df['year'], y=df['percentagechange'], mode='lines+markers', name='Cleanliness % Change', yaxis='y2')
 
         fig.update_layout(
-            xaxis=dict(tickmode='linear', tick0=df['registrationyear'].min(), dtick=1),
-            yaxis=dict(tickmode='linear', tick0=df['numberofhosts'].min(), dtick=500)
+            yaxis2=dict(
+                title='Percentage Change',
+                overlaying='y',
+                side='right'
+            ),
+            yaxis=dict(tickmode='linear', tick0=df['cleanavg'].min(), dtick=0.5)
         )
 
     fig.update_layout(template="plotly_dark")
@@ -102,4 +113,3 @@ if __name__ == '__main__':
     app = run_app(layout=layout)
 else:
     register_page(__name__, path=page_info[page_name]["href"])
-
