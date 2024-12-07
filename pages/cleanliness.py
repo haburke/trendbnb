@@ -14,6 +14,7 @@ import sqlalchemy as sa
 # ======================================================================================================================
 # import non-standard library packages
 # ----------------------------------------------------------------------------------------------------------------------
+import pandas as pd
 
 # ======================================================================================================================
 # import local packages
@@ -21,7 +22,28 @@ import sqlalchemy as sa
 from pages.components import *
 from pages.utils import db_query, engine
 
+
+# -- helper functions --------------------------------------------------------------------------------------------------
+def get_review_countries():
+    df = db_query(engine, """
+                  WITH ReviewData AS (
+            SELECT 
+                L.Country AS Country
+            FROM 
+                Listing L
+                INNER JOIN Review R ON L.ListingID = R.ListingID
+                INNER JOIN DetailedReview DR ON R.ListingID = DR.ListingID
+        )
+        SELECT Country, COUNT(Country) AS Count
+        FROM ReviewData
+        GROUP BY Country
+        ORDER BY COUNT(Country) DESC
+                  """)
+    return df
+
+# -- register page -----------------------------------------------------------------------------------------------------
 page_name = "cleanliness"
+register_page(__name__, path=page_info[page_name]["href"])
 
 # -- customize simple navbar -------------------------------------------------------------------------------------------
 navbar_main = deepcopy(navbar)
@@ -30,36 +52,40 @@ set_active(navbar_main, page_name)
 # -- layout ------------------------------------------------------------------------------------------------------------
 layout = dbc.Container(
     [
-        navbar_main,  # Place the navbar outside the input group
-        # Input group for city search
-        dbc.InputGroup(
-            [
-                dbc.Input(
-                    id="country_input_1",
-                    placeholder="Enter a country name here...",
-                    type="text",
-                    style={"width": "50%"}
-                ),
-                dbc.Button(
-                    "Search",
-                    id="country_search_button_1",
-                    n_clicks=0,
-                    color="primary",
-                    style={"margin-left": "10px"}
-                ),
-            ],
-            style={"margin-bottom": "20px"}
-        ),
-        dcc.Graph(id="cleanliness_graph"),
+        dbc.Card([
+            navbar_main,
+
+            html.Div(
+                [
+                    html.H5("Summary"),
+                    html.P(
+
+                        "By utilizing an extensive database with over 400,000 Airbnb listing records"
+                    ),
+                ], className="summary"
+            ),
+
+            # Graph
+            dcc.Loading(
+                dcc.Graph(id="cleanliness_graph"),
+            ),
+
+            # Country Select
+            html.Div("Select Countries"),
+            dcc.Dropdown(id='country-select',
+                         options=get_review_countries().country,
+                         multi=True,
+                         clearable=True,
+                         value=["France", "United States"]),
+
+        ], body=True, style={"margin": '20%', "margin-top": 50, 'border-color': "#111111", 'border-style': "solid",
+                             'border-width': "1px", 'border-radius': 0}),
     ], className="dbc", fluid=True)
 
 @callback(Output("cleanliness_graph", "figure"),
-        [Input("country_search_button_1", "n_clicks")],
-        [State("country_input_1", "value")],
+        [Input("country-select", "value")],
           )
-def update_graph(n_clicks, selected_country):
-    if not selected_country:
-        selected_city = "France"
+def update_graph(countries):
     query = sa.text(""" WITH CleanYears AS(
                     SELECT EXTRACT(YEAR FROM l.FirstReview) AS Year, AVG(d.Cleanliness) AS CleanAvg
                     FROM "ANDREW.GOLDSTEIN".Listing l
@@ -83,33 +109,37 @@ def update_graph(n_clicks, selected_country):
                     ORDER BY Year
                     """)
 
-    params = {"CountryName":selected_country}
-    df = db_query(engine, query, params)
+    dfs = []
+    for country in countries:
+        params = {"CountryName": country}
+        df_country = db_query(engine, query, params)
+        df_country["country"] = country
+        dfs.append(df_country)
+    df_merged = pd.concat(dfs)
 
-    if df.empty:
-        fig = px.scatter(title=f"No data was found for the country: {selected_country}.")
+    fig = px.bar(data_frame=df_merged,
+                 x=df_merged['year'],
+                 y=df_merged['cleanavg'],
+                 color=df_merged['country'],
+                 barmode='group',
+                 title="Cleanliness Change Over Time",
+                 labels={'year': 'Year', 'cleanavg': 'Average Cleanliness'})
+    for country in countries:
+        fig.add_scatter(x=df_merged[df_merged.country == country]['year'],
+                        y=df_merged[df_merged.country == country]['percentagechange'],
+                        mode='lines+markers',
+                        name=f'{country} % Change',
+                        yaxis='y2')
 
-    else:
-        fig = px.bar(data_frame=df, x=df['year'], y=df['cleanavg'], title="Cleanliness Change Over Time",
-                     labels={'year': 'Year', 'cleanavg': 'Average Cleanliness'})
-
-        fig.add_scatter(x=df['year'], y=df['percentagechange'], mode='lines+markers', name='Cleanliness % Change', yaxis='y2')
-
-        fig.update_layout(
-            yaxis2=dict(
-                title='Percentage Change',
-                overlaying='y',
-                side='right'
-            ),
-            yaxis=dict(tickmode='linear', tick0=df['cleanavg'].min(), dtick=0.5)
-        )
+    fig.update_layout(
+        yaxis2=dict(
+            title='Percentage Change',
+            overlaying='y',
+            side='right'
+        ),
+        yaxis=dict(tickmode='linear', tick0=df_merged['cleanavg'].min(), dtick=0.5)
+    )
 
     fig.update_layout(template="plotly_dark")
     return fig
 
-if __name__ == '__main__':
-    from utils import run_app
-
-    app = run_app(layout=layout)
-else:
-    register_page(__name__, path=page_info[page_name]["href"])
