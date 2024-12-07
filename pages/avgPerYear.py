@@ -73,11 +73,6 @@ fig.update_layout(template="plotly_dark")
 navbar_main = deepcopy(navbar)
 set_active(navbar_main, page_name)
 
-#db_query(avgPerYearQuery(city_name))
-# db_query(avgPerYearQuery(city_name))
-
-
-
 
 layout = dbc.Container(
     [
@@ -109,11 +104,8 @@ layout = dbc.Container(
                     [
                         html.H5("Summary"),
                         html.P(
-                    
-                            "By utilizing an extensive database with over 400,000 Airbnb listings, this dashboard"
-                            "offers visualization of complex trends that can help inform hosts, real estate agents,"
-                            "property managers, and local legislators about Airbnb listing data. Our trend analysis"
-                            "provides insights into local markets."
+                            "Shows the Average Price Change per year for a selected city, showing trends in the market over time."
+                            "This allows for prediction of future trends and can be used to inform property owners about hosting decisions."
                         ),
                     ], className="summary"
                 ),
@@ -195,9 +187,16 @@ def update_graph(n_clicks, selected_city):
                                             open=avgPrice*(1 - perChange/100) if perChange is not None else avgPrice,
                                             high=avgPrice,
                                             low=avgPrice,
-                                            close=avgPrice)])
+                                            close=avgPrice,
+                                            name='Price Change')])
+        fig.add_scatter(x=listYear,
+                        y=avgPrice,
+                        name='Average Price',
+                        mode='lines+markers')
         
-    fig.update_layout(template="plotly_dark")
+    fig.update_layout(
+        template="plotly_dark",
+        xaxis_rangeslider_visible=False,)
     return fig
 
 
