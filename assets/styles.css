@@ -44,14 +44,16 @@ h1 {
 
 /* Home */
 .summary {
+    color: #1f1f1f;
     position: relative;
-    padding: 5px;
+    padding: 10px;
     margin-bottom: 25px;
     margin-top: 25px;
     border-radius: 1px;
-    background: #868E96;
+    background: #66B2B2;
 }
 .summary h5 {
+    color: #1f1f1f;
     margin-bottom: 1rem;
     font-size: 1.3rem;
 }

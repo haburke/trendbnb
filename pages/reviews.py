@@ -59,13 +59,26 @@ layout = dbc.Container(
 
             html.Div(
                 [
-                    html.H5("Summary"),
+                    html.H5("Description"),
                     html.P(
-                        "By utilizing an extensive database with over 400,000 Airbnb listings, this dashboard"
-                        "offers visualization of complex trends that can help inform hosts, real estate agents,"
-                        "property managers, and local legislators about Airbnb listing data. Our trend analysis"
-                        "provides insights into local markets."
+                        """
+                         This time series shows the review scores for a city, averaged monthly over several years. 
+                         We can plot multiple cities and directly compare them to one another.
+                        """
                     ),
+
+                    html.H5("Motivation"),
+                    html.P(
+                        """
+                        A prospective host could compare average review scores
+                        between various world cities in order to make a decision about which markets
+                        to purchase a home for an Airbnb.
+
+                        Review score trend analysis could also be useful for keeping track of
+                        up-and-coming cities, and can use the slope of current review trends
+                        to recommend cities to clients.
+                        """
+                    )
                 ], className="summary"
             ),
 

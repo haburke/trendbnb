@@ -45,7 +45,7 @@ cfg = get_config()
 # -- init pages --------------------------------------------------------------------------------------------------------
 page_info = {
     "home":{"id": "home-select", "href": "/", "page-title": "Home"},
-    "page1": {"id": "page1-select", "href": "/numhosts", "page-title": "Hosts"},
+    "hosts": {"id": "page1-select", "href": "/hosts", "page-title": "Hosts"},
     "avgPerYear": {"id": "avgPerYear-select", "href": "/avgPerYear", "page-title": "Popularity"},
     "seasonality": {"id": "seasonality-select", "href": "/seasonality", "page-title": "Seasonality"},
     "avgreviewprice": {"id": "avgreviewprice-select", "href": "/avgreviewprice", "page-title": "Price"},

@@ -62,6 +62,41 @@ layout = dbc.Container(
                 ),
             ),
 
+            html.Div(
+                [
+                    html.H5("Data Sources"),
+                    html.P(
+
+                        """Our listing data is sourced from Airbnb Global Listings, containing 
+                        information on more than 400,000 Airbnb listings worldwide.
+                        https://www.kaggle.com/datasets/joebeachcapital/airbnb
+            
+                        The Airbnb review data we use is sourced from Airbnb Listings & Reviews,
+                        containing data for 250,000+ listings across 10 major cities.
+                        https://www.kaggle.com/datasets/mysarahmadbhat/airbnb-listings-reviews
+            
+                        Both datasets are publicly available on Kaggle."""
+                    ),
+                ], className="summary"
+            ),
+
+            html.Div(
+                [
+                    html.H5("Contributors"),
+                    html.P([
+
+                        "Heather Burke",
+                        html.Br(),
+                        "Andrew Goldstein",
+                        html.Br(),
+                        "Bayron Najera",
+                        html.Br(),
+                        "Anthony Pallitta"
+
+                    ]),
+                ], className="summary"
+            ),
+
         ], body=True, style={"margin": '20%', "margin-top": 50, 'border-color': "#111111", 'border-style': "solid", 
                              'border-width': "1px", 'border-radius': 0}), 
 

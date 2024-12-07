@@ -76,10 +76,22 @@ layout = dbc.Container(
             # Summary Div
             html.Div(
                 [
-                    html.H5("Summary"),
+                    html.H5("Description"),
                     html.P(
-                        "This plot shows how many new users were added each month over the last several years."
+                        """
+                        We are looking at the number of reviews over a given month aggregated across
+                        years in order to look at the trends in seasonal changes in a given city. 
+                        """
                     ),
+
+                    html.H5("Motivation"),
+                    html.P(
+                        """
+                        This analysis could be useful for a legislator to coordinate citywide events 
+                        at peak times of tourist visitation. It could also help agents coordinate with the needs 
+                        of a client who are looking for a summer home they can rent out in the winter.
+                        """
+                    )
                 ], className="summary"
             ),
 

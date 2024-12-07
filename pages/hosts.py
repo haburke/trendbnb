@@ -36,7 +36,7 @@ def get_listing_cities():
 
 
 # -- register page -----------------------------------------------------------------------------------------------------
-page_name = "page1"
+page_name = "hosts"
 register_page(__name__, path=page_info[page_name]["href"])
 
 # -- customize simple navbar -------------------------------------------------------------------------------------------
@@ -51,12 +51,25 @@ layout = dbc.Container(
 
             html.Div(
                 [
-                    html.H5("Summary"),
+                    html.H5("Description"),
                     html.P(
-                        "This plot shows how many new users were added each month over the last several years."
+                        """
+                        For a given city, we are plotting the quantity of new Airbnb hosts monthly
+                        over several years. 
+                        """
                     ),
+
+                    html.H5("Motivation"),
+                    html.P(
+                        """
+                        It offers valuable insights into market saturation in new short-term rentals, 
+                        which could benefit prospective hosts, potential investors, and legislators 
+                        looking to understand changes in the local short-term rental market. 
+                        """
+                    )
                 ], className="summary"
             ),
+
             # Reviews
             dcc.Loading(
                 dcc.Graph(id="num_host_graph"),
