@@ -34,35 +34,6 @@ def someQuery(city:str) -> str:
     '''
 
 
-def avgPerYearQuery(city:str) -> str:
-    return f'''
-    WITH YearlyPriceData AS (
-        SELECT 
-            L.City,
-            EXTRACT(YEAR FROM L.FirstReview) AS ListingYear,
-            AVG(L.DailyPrice) AS AvgDailyPrice
-        FROM "{db_owner}".Listing L
-        WHERE L.City = '{city}'
-        GROUP BY L.City, EXTRACT(YEAR FROM L.FirstReview)
-    ),
-    PriceChange AS (
-        SELECT 
-            ListingYear,
-            AvgDailyPrice,
-            LAG(AvgDailyPrice) OVER (ORDER BY ListingYear) AS PrevYearAvgPrice
-        FROM YearlyPriceData
-    )
-    SELECT ListingYear, round(AvgDailyPrice),
-        CASE 
-            WHEN PrevYearAvgPrice IS NOT NULL THEN
-                ROUND((AvgDailyPrice - PrevYearAvgPrice) / PrevYearAvgPrice * 100, 2)
-            ELSE
-                NULL
-        END AS PercentageChange
-    FROM PriceChange
-    ORDER BY ListingYear
-    '''
-
 # -- plotly figs -------------------------------------------------------------------------------------------------------
 x, y = get_data()
 values, headers = get_table()
@@ -146,31 +117,33 @@ def update_graph(n_clicks, selected_city):
     if not selected_city:
         selected_city = "Paris"
     query = sa.text(f"""
-        WITH YearlyPriceData AS (
-            SELECT 
-                L.City,
-                EXTRACT(YEAR FROM L.FirstReview) AS ListingYear,
-                AVG(L.DailyPrice) AS AvgDailyPrice
-            FROM "ANDREW.GOLDSTEIN".Listing L
-            WHERE L.City = :CityName -- Replace with the desired city
-            GROUP BY L.City, EXTRACT(YEAR FROM L.FirstReview)
-        ),
-        PriceChange AS (
-            SELECT 
-                ListingYear,
-                AvgDailyPrice,
-                LAG(AvgDailyPrice) OVER (ORDER BY ListingYear) AS PrevYearAvgPrice
-            FROM YearlyPriceData
-        )
-        SELECT ListingYear, round(AvgDailyPrice) AS AvgDailyPrice,
-            CASE 
-                WHEN PrevYearAvgPrice IS NOT NULL THEN
-                    ROUND((AvgDailyPrice - PrevYearAvgPrice) / PrevYearAvgPrice * 100, 2)
-                ELSE
-                    NULL
-            END AS PercentageChange
-        FROM PriceChange
-        ORDER BY ListingYear
+        WITH MonthlyPriceData AS (
+        SELECT 
+            L.City,
+            TO_CHAR(L.FirstReview, 'YYYY-MM') AS ListingMonth,
+            EXTRACT(YEAR FROM L.FirstReview) AS ListingYear,
+            EXTRACT(MONTH FROM L.FirstReview) AS ListingMonthNumber,
+            AVG(L.DailyPrice) AS AvgDailyPrice
+        FROM "ANDREW.GOLDSTEIN".Listing L
+        WHERE L.City = '{selected_city}'
+        GROUP BY L.City, TO_CHAR(L.FirstReview, 'YYYY-MM'), EXTRACT(YEAR FROM L.FirstReview), EXTRACT(MONTH FROM L.FirstReview)
+    ),
+    PriceChange AS (
+        SELECT ListingMonth, AvgDailyPrice,
+            LAG(AvgDailyPrice) OVER (ORDER BY ListingYear, ListingMonthNumber) AS PrevMonthAvgPrice
+        FROM MonthlyPriceData
+    )
+    SELECT 
+        ListingMonth,
+        ROUND(AvgDailyPrice,0) AS AvgDailyPrice,
+        CASE 
+            WHEN PrevMonthAvgPrice IS NOT NULL THEN
+                ROUND((AvgDailyPrice - PrevMonthAvgPrice) / PrevMonthAvgPrice * 100, 2)
+            ELSE
+                NULL
+        END AS PercentageChange
+    FROM PriceChange
+    ORDER BY ListingMonth
         """)
 
     params = {"CityName":selected_city}
@@ -180,23 +153,23 @@ def update_graph(n_clicks, selected_city):
         #change the title
         fig = go.Figure(layout={"Title":f"No data was found for the city: {selected_city}. Please enter a different one."})
     else:
-        listYear = df['listingyear']
+        listMonth = df['listingmonth']
         avgPrice = df['avgdailyprice']
         perChange = df['percentagechange']
-        fig = go.Figure(data=[go.Candlestick(x=listYear,
+        fig = go.Figure(data=[go.Candlestick(x=listMonth,
                                             open=avgPrice*(1 - perChange/100) if perChange is not None else avgPrice,
                                             high=avgPrice,
                                             low=avgPrice,
                                             close=avgPrice,
                                             name='Price Change')])
-        fig.add_scatter(x=listYear,
+        fig.add_scatter(x=listMonth,
                         y=avgPrice,
                         name='Average Price',
                         mode='lines+markers')
         
     fig.update_layout(
-        template="plotly_dark",
-        xaxis_rangeslider_visible=False,)
+        template="plotly_dark",)
+
     return fig
 
 
