@@ -57,11 +57,24 @@ layout = dbc.Container(
 
             html.Div(
                 [
-                    html.H5("Summary"),
+                    html.H5("Description"),
                     html.P(
-
-                        "By utilizing an extensive database with over 400,000 Airbnb listing records"
+                        """
+                        This query calculates the average cleanliness over all in each respective year’s listings. 
+                        The user can select multiple cities, and the graph also shows percentage change based on the previous 
+                        year’s average. This will show how cleanliness has increased or decreased on average for a city over time.
+                        """
                     ),
+
+                    html.H5("Motivation"),
+                    html.P(
+                        """
+                        This analysis helps show Airbnb hosts how cleanliness has changed for each year, 
+                        allowing them to compare their own cleanliness score to the average in their city. 
+                        Additionally, this analysis shows city officials how cleanliness for Airbnb locations changes over 
+                        time to help see trends on property cleanliness in that respective city. 
+                        """
+                    )
                 ], className="summary"
             ),
 
