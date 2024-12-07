@@ -59,10 +59,14 @@ layout = dbc.Container(
             
             html.Div(
                     [
-                        html.H5("Summary"),
+                        html.H5("Application Overview"),
                         html.P(
                     
-                            "By utilizing an extensive database with over 400,000 Airbnb listing records"
+                            "Trendbnb is a data dashboard that visualizes historical"
+	                        "Airbnb trends such as pricing, seasonality, host behavior, and"
+	                        "review scores across many cities worldwide. These insights assist"
+	                        "potential Airbnb hosts, real estate agents, property managers, and"
+	                        "local legislators in making informed decisions regarding short-term rentals."
                         ),
                     ], className="summary"
                 ),
