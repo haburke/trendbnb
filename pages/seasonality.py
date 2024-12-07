@@ -21,7 +21,7 @@ import sqlalchemy as sa
 from pages.components import *
 from pages.utils import db_query
 
-page_name = "page1"
+page_name = "seasonality"
 
 # -- customize simple navbar -------------------------------------------------------------------------------------------
 navbar_main = deepcopy(navbar)
@@ -35,14 +35,14 @@ layout = dbc.Container(
         dbc.InputGroup(
             [
                 dbc.Input(
-                    id="city_input",
+                    id="city_input_2",
                     placeholder="Enter a city name here...",
                     type="text",
                     style={"width": "50%"}
                 ),
                 dbc.Button(
                     "Search",
-                    id="city_search_button",
+                    id="city_search_button_2",
                     n_clicks=0,
                     color="primary",
                     style={"margin-left": "10px"}
@@ -50,46 +50,68 @@ layout = dbc.Container(
             ],
             style={"margin-bottom": "20px"}
         ),
+        dcc.Dropdown(id='year_dropdown_1',
+             options=[
+                      {'label': '2012', 'value': (15*12)},
+                      {'label': '2013', 'value': (14*12)},
+                      {'label': '2014', 'value': (13*12)},
+                      {'label': '2015', 'value': (12*12)},
+                      {'label': '2016', 'value': (11*12)},
+                      {'label': '2017', 'value': (10*12)},
+                      {'label': '2018', 'value': (9*12)},
+                      {'label': '2019', 'value': (8*12)},
+                      {'label': '2020', 'value': (7*12)},
+                      {'label': '2021', 'value': (6*12)}],
+             value="2017",
+             style={'width': "50%"}),
         # Graph for displaying results
-        dcc.Graph(id="num_host_graph"),
+        dcc.Graph(id="seasonality_graph"),
     ], className="dbc", fluid=True)
 
-@callback(Output("num_host_graph", "figure"),
-        [Input("city_search_button", "n_clicks")],
-        [State("city_input", "value")]
+@callback(Output("seasonality_graph", "figure"),
+        [Input("city_search_button_2", "n_clicks")],
+        [State("city_input_2", "value")],
+         [Input("year_dropdown_1", "value")]
           )
-def update_graph(n_clicks, selected_city):
+def update_graph(n_clicks, selected_city, selected_year):
     if not selected_city:
         selected_city = "Paris"
-    query = sa.text("""WITH HostData AS (
-        SELECT 
-            H.HostID,
-            EXTRACT(YEAR FROM H.HostSince) AS RegistrationYear,
-            L.City
-        FROM 
-            "ANDREW.GOLDSTEIN".Host H
-            INNER JOIN "ANDREW.GOLDSTEIN".Listing L ON H.HostID = L.HostID
-        WHERE 
-            L.City = :CityName
-    )
-    SELECT RegistrationYear, COUNT(DISTINCT HostID) AS NumberOfHosts
-    FROM HostData
-    WHERE RegistrationYear >= EXTRACT(YEAR FROM SYSDATE) - 10
-    GROUP BY RegistrationYear
-    ORDER BY RegistrationYear""")
+    query = sa.text("""WITH MonthlyReviewData AS (
+                        SELECT 
+                            L.City,
+                            EXTRACT(MONTH FROM R.ReviewDate) AS ReviewMonth,
+                            COUNT(R.ReviewID) AS ReviewCount
+                        FROM 
+                            "ANDREW.GOLDSTEIN".Review R
+                            INNER JOIN "ANDREW.GOLDSTEIN".Listing L ON R.ListingID = L.ListingID
+                        WHERE 
+                            L.City = :CityName
+                            AND R.ReviewDate >= ADD_MONTHS(SYSDATE, -1 * :Year)
+                        GROUP BY 
+                            L.City, EXTRACT(MONTH FROM R.ReviewDate)
+                    )
+                    SELECT ReviewMonth, ReviewCount
+                    FROM MonthlyReviewData
+                    ORDER BY ReviewMonth DESC
+                    """)
 
-    params = {"CityName":selected_city}
+    params = {"CityName":selected_city, "Year":selected_year}
     df = db_query(query, params)
 
     if df.empty:
-        fig = px.scatter(title=f"No data was found for the city: {selected_city}. Please enter a different one.")
+        fig = px.scatter(title=f"No data was found. Please enter a different specifications for city or year.")
 
     else:
-        fig = px.line(data_frame=df, x=df['registrationyear'], y=df['numberofhosts'], title="Number of Hosts Over Time")
+        fig = px.line(data_frame=df, x=df['reviewmonth'], y=df['reviewcount'], title="Seasonality Trends Over Time")
 
         fig.update_layout(
-            xaxis=dict(tickmode='linear', tick0=df['registrationyear'].min(), dtick=1),
-            yaxis=dict(tickmode='linear', tick0=df['numberofhosts'].min(), dtick=500)
+            xaxis=dict(
+                tickmode='array',
+                tickvals=list(range(1, 13)),
+                ticktext=['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                          'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+            ),
+            yaxis=dict(tickmode='linear', tick0=df['reviewcount'].min(), dtick=500)
         )
 
     fig.update_layout(template="plotly_dark")
