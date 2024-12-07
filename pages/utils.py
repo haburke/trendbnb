@@ -42,7 +42,7 @@ def get_config():
     cfg.read(cfg_dir/'config.ini')
     return cfg
 
-def db_func():
+def db_query(query = None):
     from config.cred import USERNAME, PASSWORD, HOST, SID
     username = USERNAME
     password = PASSWORD
@@ -51,18 +51,15 @@ def db_func():
     sid =  SID
 
     dsn = oracledb.makedsn(host, port, sid=sid)
-
     connection_string = f"oracle+oracledb://{username}:{password}@{host}:{port}/{sid}"
-
     engine = sa.create_engine(connection_string)
+    connection = None
 
     try:
         connection = engine.connect()
-
         print("Successfully connected to the database.")
-
-        query = "SELECT COUNT(*) FROM Listing"
-
+        if query is None:
+            query = "SELECT COUNT(*) FROM Listing"
         df = pd.read_sql(query, connection)
         print(df)
 

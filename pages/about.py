@@ -21,7 +21,7 @@ import plotly.graph_objs as go
 from pages.components import *
 from pages.utils import get_data, get_table
 
-page_name = __file__.split("/")[-1].split(".py")[0]
+page_name = "about"
 
 # -- plotly figs -------------------------------------------------------------------------------------------------------
 x, y = get_data()

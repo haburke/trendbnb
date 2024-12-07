@@ -18,7 +18,7 @@ import dash_bootstrap_components as dbc
 # ----------------------------------------------------------------------------------------------------------------------
 from pages.components import *
 
-page_name = __file__.split("/")[-1].split(".py")[0]
+page_name = "home"
 
 # -- customize simple navbar -------------------------------------------------------------------------------------------
 navbar_main = deepcopy(navbar)
