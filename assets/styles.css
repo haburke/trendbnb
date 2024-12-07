@@ -52,8 +52,20 @@ h1 {
     border-radius: 1px;
     background: #66B2B2;
 }
+.summary2 {
+    color: #1f1f1f;
+    position: relative;
+    padding: 10px;
+    margin-bottom: 25px;
+    margin-top: 25px;
+    border-radius: 1px;
+    background: #B2D8D8;
+}
 .summary h5 {
     color: #1f1f1f;
     margin-bottom: 1rem;
     font-size: 1.3rem;
+}
+.link {
+    color: #004C4C
 }
