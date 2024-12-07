@@ -48,7 +48,7 @@ page_info = {
     "hosts": {"id": "page1-select", "href": "/hosts", "page-title": "Hosts"},
     "avgPerYear": {"id": "avgPerYear-select", "href": "/pricechange", "page-title": "Price Change"},
     "seasonality": {"id": "seasonality-select", "href": "/seasonality", "page-title": "Seasonality"},
-    "avgreviewprice": {"id": "avgreviewprice-select", "href": "/price", "page-title": "Price"},
+    #"avgreviewprice": {"id": "avgreviewprice-select", "href": "/price", "page-title": "Price"},
     "cleanliness": {"id": "cleanliness-select", "href": "/cleanliness", "page-title": "Cleanliness"},
     "reviews": {"id": "reviews-select", "href": "/reviews", "page-title": "Reviews"},
     "popularity": {"id": "popularity-select", "href": "/popularity", "page-title": "Popularity"},
