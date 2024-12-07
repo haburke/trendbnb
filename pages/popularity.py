@@ -14,7 +14,7 @@ import plotly.graph_objs as go
 # import local packages
 # ----------------------------------------------------------------------------------------------------------------------
 from pages.components import *
-from pages.utils import db_query
+from pages.utils import db_query, engine  # Import engine
 
 # Page Configurations
 page_name = "popularity"
@@ -124,7 +124,7 @@ def update_popularity_graph(n_clicks, selected_city, selected_years):
     if not selected_years:
         selected_years = 5  # Default years
     query = popListOverTime(selected_city, selected_years)
-    query_results = db_query(query)
+    query_results = db_query(engine, query)  # Use engine in db_query
 
     if query_results is not None and not query_results.empty:
         query_results["reviewyear"] = query_results["reviewyear"].astype(int)
