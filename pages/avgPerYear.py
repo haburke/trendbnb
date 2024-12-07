@@ -72,14 +72,24 @@ layout = dbc.Container(
             [ 
                 navbar_main,
                 html.Div(
-                    [
-                        html.H5("Summary"),
-                        html.P(
-                            "Shows the Average Price Change per year for a selected city, showing trends in the market over time."
-                            "This allows for prediction of future trends and can be used to inform property owners about hosting decisions."
-                        ),
-                    ], className="summary"
-                ),
+                [
+                    html.H5("Description"),
+                    html.P(
+                        """
+                        Shows the Average Price Change per year for a selected city, showing trends in the market over time. 
+                        """
+                    ),
+
+                    html.H5("Motivation"),
+                    html.P(
+                        """
+                        This page offers valuable insights into market trends in the short-term rental market,
+                        which could benefit prospective hosts, potential investors, 
+                        and legislators looking to understand changes in the local short-term rental market.
+                        """
+                    )
+                ], className="summary"
+            ),
                 #
                 dbc.InputGroup(
                     [
