@@ -45,8 +45,11 @@ cfg = get_config()
 # -- init pages --------------------------------------------------------------------------------------------------------
 page_info = {
     "home":{"id": "home-select", "href": "/", "page-title": "Home"},
-    "page1": {"id": "page1-select", "href": "/page1", "page-title": "Page1"},
+    "page1": {"id": "page1-select", "href": "/numhosts", "page-title": "Number of Hosts Trend"},
     "about": {"id": "about-select", "href": "/about", "page-title": "About"},
+    "seasonality": {"id": "seasonality-select", "href": "/seasonality", "page-title": "Seasonality Trends"},
+    "avgreviewprice": {"id": "avgreviewprice-select", "href": "/avgreviewprice", "page-title": "Average Review Price"},
+    "listvolumeactivity": {"id": "listvolumeactivity-select", "href": "/listvolumeactivity", "page-title": "List Volume Activity"},
 }
 
 # -- navbar components -------------------------------------------------------------------------------------------------

@@ -21,7 +21,7 @@ import sqlalchemy as sa
 from pages.components import *
 from pages.utils import db_query
 
-page_name = "page1"
+page_name = "listvolumeactivity"
 
 # -- customize simple navbar -------------------------------------------------------------------------------------------
 navbar_main = deepcopy(navbar)
@@ -35,14 +35,14 @@ layout = dbc.Container(
         dbc.InputGroup(
             [
                 dbc.Input(
-                    id="city_input",
+                    id="city_input_2",
                     placeholder="Enter a city name here...",
                     type="text",
                     style={"width": "50%"}
                 ),
                 dbc.Button(
                     "Search",
-                    id="city_search_button",
+                    id="city_search_button_2",
                     n_clicks=0,
                     color="primary",
                     style={"margin-left": "10px"}
@@ -50,46 +50,52 @@ layout = dbc.Container(
             ],
             style={"margin-bottom": "20px"}
         ),
-        # Graph for displaying results
-        dcc.Graph(id="num_host_graph"),
+        dcc.Graph(id="list_volume_graph"),
     ], className="dbc", fluid=True)
 
-@callback(Output("num_host_graph", "figure"),
-        [Input("city_search_button", "n_clicks")],
-        [State("city_input", "value")]
+@callback(Output("list_volume_graph", "figure"),
+        [Input("city_search_button_4", "n_clicks")],
+        [State("city_input_4", "value")],
           )
 def update_graph(n_clicks, selected_city):
     if not selected_city:
         selected_city = "Paris"
-    query = sa.text("""WITH HostData AS (
-        SELECT 
-            H.HostID,
-            EXTRACT(YEAR FROM H.HostSince) AS RegistrationYear,
-            L.City
-        FROM 
-            "ANDREW.GOLDSTEIN".Host H
-            INNER JOIN "ANDREW.GOLDSTEIN".Listing L ON H.HostID = L.HostID
-        WHERE 
-            L.City = :CityName
-    )
-    SELECT RegistrationYear, COUNT(DISTINCT HostID) AS NumberOfHosts
-    FROM HostData
-    WHERE RegistrationYear >= EXTRACT(YEAR FROM SYSDATE) - 10
-    GROUP BY RegistrationYear
-    ORDER BY RegistrationYear""")
+    query = sa.text(""" MultipleListings AS (
+                    SELECT h.HostID, h.Name, l.ListingID, l.City
+                    FROM Host h
+                    JOIN Listing l ON h.HostID = l.HostID
+                    WHERE l.City = :CityName AND h.HostListingAmount > 1
+                    GROUP BY h.HostID, h.Name, l.ListingID, l.City
+                ),
+                HostBookingFrequency AS (
+                    SELECT ml.HostID, ml.Name, COUNT(r.ReviewID) AS TotalReviews,
+                           ROUND(COUNT(r.ReviewID) / 12.0, 2) AS AvgMonthlyReviews
+                    FROM MultipleListings ml
+                    LEFT JOIN Review r ON ml.ListingID = r.ListingID
+                    GROUP BY ml.HostID, ml.Name
+                )
+                SELECT HostID, Name, TotalReviews, AvgMonthlyReviews
+                FROM HostBookingFrequency
+                ORDER BY AvgMonthlyReviews DESC;
+                    """)
 
     params = {"CityName":selected_city}
     df = db_query(query, params)
 
     if df.empty:
-        fig = px.scatter(title=f"No data was found for the city: {selected_city}. Please enter a different one.")
+        fig = px.scatter(title=f"No data was found. Please enter a different specifications for city or year.")
 
     else:
-        fig = px.line(data_frame=df, x=df['registrationyear'], y=df['numberofhosts'], title="Number of Hosts Over Time")
+        fig = px.line(data_frame=df, x=df[''], y=df['reviewcount'], title="Seasonality Trends Over Time")
 
         fig.update_layout(
-            xaxis=dict(tickmode='linear', tick0=df['registrationyear'].min(), dtick=1),
-            yaxis=dict(tickmode='linear', tick0=df['numberofhosts'].min(), dtick=500)
+            xaxis=dict(
+                tickmode='array',
+                tickvals=list(range(1, 13)),
+                ticktext=['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                          'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+            ),
+            yaxis=dict(tickmode='linear', tick0=df['reviewcount'].min(), dtick=500)
         )
 
     fig.update_layout(template="plotly_dark")
@@ -101,4 +107,3 @@ if __name__ == '__main__':
     app = run_app(layout=layout)
 else:
     register_page(__name__, path=page_info[page_name]["href"])
-
