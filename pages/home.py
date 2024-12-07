@@ -3,16 +3,19 @@
 # ----------------------------------------------------------------------------------------------------------------------
 from copy import deepcopy
 
+import numpy as np
 # ======================================================================================================================
 # import dash library packages
 # ----------------------------------------------------------------------------------------------------------------------
 from dash import register_page, html, dcc, Input, Output, callback, dash_table
 import dash_bootstrap_components as dbc
+import plotly.express as px
 
 # ======================================================================================================================
 # import non-standard library packages
 # ----------------------------------------------------------------------------------------------------------------------
 import pandas as pd
+import sqlalchemy as sa
 
 # ======================================================================================================================
 # import local packages
@@ -42,9 +45,17 @@ layout = dbc.Container(
                         ),
                     ], className="summary"
                 ),
+
+            # Reviews
+            dcc.Loading(
+                dcc.Graph(id="avg-review-trend-graph"),
+            ),
+
+
+            # Total Tuples Graph
             dcc.Loading(
                 dash_table.DataTable(
-                    id='datatable-interactivity',
+                    id='total-tuples-table',
                     columns=[{"name": i, "id": i} for i in ['Data Table']],
                     data=[{'Data Table': "Loading"}],
                     editable=True,
@@ -71,11 +82,53 @@ layout = dbc.Container(
 
     ], className="dbc", fluid=True)
 
+@callback(
+    Output("avg-review-trend-graph", "figure"),
+    [Input("avg-review-trend-graph", "data")],
+)
+def update_review_trend(figure):
+    query = sa.text("""
+    WITH ReviewData AS (
+        SELECT 
+            L.City,
+            EXTRACT(YEAR FROM R.ReviewDate) * 100 + EXTRACT(MONTH FROM R.ReviewDate) AS ReviewDate,
+            DR.Rating
+        FROM 
+            Listing L
+            INNER JOIN Review R ON L.ListingID = R.ListingID
+            INNER JOIN DetailedReview DR ON R.ListingID = DR.ListingID
+        WHERE 
+            L.City = :CityName
+    )
+    SELECT :CityName, ReviewDate, AVG(Rating) AS AvgReviewScore
+    FROM ReviewData
+    WHERE ReviewDate >= EXTRACT(YEAR FROM SYSDATE) * 100 + EXTRACT(MONTH FROM SYSDATE) - :NumberOfYears * 100
+    GROUP BY ReviewDate
+    ORDER BY ReviewDate""")
+
+    params = {"CityName": "Paris", "NumberOfYears": 15}
+    df = db_query(query, params)
+
+    fig = px.line(data_frame=df,
+                  # x=df['reviewdate'],
+                  y=df['avgreviewscore'], title="Average Review Trend", line_group=":CITYNAME",)
+    tick_locs = np.where(df.reviewdate.astype(str).str.endswith(("01", "07")))[0]
+    tick_text = [f"{v[0:4]}-{v[4:]}" for v in df.reviewdate.astype(str).values[tick_locs]]
+    fig.update_layout(template="plotly_dark",
+                      showlegend=True,
+                      xaxis={'title': "Date",
+                             'tickmode': 'array',
+                             'tickvals': tick_locs,
+                             'ticktext': tick_text,
+                             'tickangle': 45},
+                      yaxis={'title': f"Average Review Score for {params['CityName']}",})
+    return fig
 
 @callback(
-    Output('datatable-interactivity', 'data'),
-    Output('datatable-interactivity', 'columns'),
-    Input('datatable-interactivity', 'data')
+    Output('total-tuples-table', 'data'),
+    Output('total-tuples-table', 'columns'),
+    Input('total-tuples-table', 'data'),
+    prevent_initial_call=True
 )
 def update_graphs(value):
     from pages.utils import db_query

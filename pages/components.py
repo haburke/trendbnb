@@ -11,7 +11,7 @@ from pathlib import Path
 from dash import Dash, html, dcc, page_registry, page_container, Input, Output, State, callback
 import dash_bootstrap_components as dbc
 from dash_bootstrap_templates import load_figure_template, ThemeChangerAIO
-
+from pandas.core.computation import align
 
 # ======================================================================================================================
 # import non-standard library packages
@@ -47,15 +47,20 @@ page_info = {
     "home":{"id": "home-select", "href": "/", "page-title": "Home"},
     "page1": {"id": "page1-select", "href": "/page1", "page-title": "Page1"},
     "about": {"id": "about-select", "href": "/about", "page-title": "About"},
+    "reviews": {"id": "reviews-select", "href": "/reviews", "page-title": "Reviews"},
 }
 
 # -- navbar components -------------------------------------------------------------------------------------------------
 theme_button = ThemeChangerAIO(aio_id="theme", radio_props={"value": dbc.themes.DARKLY})
 nav_options = dbc.Nav([
-    dbc.NavItem(dbc.NavLink(page_info[link]["page-title"],
+    dbc.NavItem(
+        dbc.NavLink(page_info[link]["page-title"],
                             href=page_info[link]["href"],
                             id=page_info[link]["id"]), class_name='nav-pill') for link in page_info], 
-                            class_name='nav-pills', justified=True, style={'margin-top':150})
+                            class_name='nav-pills',
+    justified=True,
+    style={'margin-top':50}
+)
 contact_info = dbc.Row([
                             dbc.Col([
                                 html.P(
@@ -75,20 +80,30 @@ contact_info = dbc.Row([
                         ], style={'margin-left': "auto", 'margin-right': 10})
 dk_bg = {'background-image': f'url({cfg["navbar"]["dark_bg"]})', 'height': 190, 'background-size': "cover"}
 lt_bg = {'background-image': f'url({cfg["navbar"]["light_bg"]})', 'height': 190, 'background-size': "cover"}
-navbar = dbc.Row(
-                dbc.Col(nav_options, style={'margin-left': "20%", 'margin-right': "20%"}),
-                style=dk_bg, id="nav"
-                )
+navbar = html.Div([
+    dbc.Row(
+        html.Div(
+            [
+                html.H2("Airbnb Trend Analysis")
+            ], className="navbar", style={'height': 100, 'text-align': "center", 'margin': "auto"}
+        ),
+    ),
+    dbc.Row(
+        dbc.Col(nav_options, style={'margin-left': "20%", 'margin-right': "20%"})
+    ),
+],
+    style=dk_bg, id="nav"
+)
 
 
 def set_active(navbar_main, page_name):
-    for nav in navbar_main.children.children.children:
+    for nav in navbar_main.children[1].children.children.children:
         if nav.children.id == page_info[page_name]['id']:
             nav.children.active = True
-            nav.children.style = {'background-color': "var(--bs-dark)", 'border-bottom-left-radius': 0, 
+            nav.children.style = {'background-color': "var(--bs-dark)", 'border-bottom-left-radius': 0,
                                   'border-bottom-right-radius': 0}
-        elif nav.children.id == 'login-select':
-            nav.children.style = {'display': "none"}
+    return
+
     
 
 # -- footer ------------------------------------------------------------------------------------------------------------
