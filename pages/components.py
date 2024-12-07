@@ -52,6 +52,7 @@ page_info = {
     "cleanliness": {"id": "cleanliness-select", "href": "/cleanliness", "page-title": "Cleanliness Trends"},
     "about": {"id": "about-select", "href": "/about", "page-title": "About"},
     "reviews": {"id": "reviews-select", "href": "/reviews", "page-title": "Reviews"},
+    "popularity": {"id": "popularity-select", "href": "/popularity", "page-title": "Popularity"},
 }
 
 # -- navbar components -------------------------------------------------------------------------------------------------
