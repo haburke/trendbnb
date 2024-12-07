@@ -52,39 +52,46 @@ layout = dbc.Container(
                     ], className="summary"
                 ),
 
-            # Total Tuples Graph
-            html.Div("Total Tuples Table"),
-            dcc.Loading(
-                dash_table.DataTable(
-                    id='total-tuples-table',
-                    columns=[{"name": i, "id": i} for i in ['Data Table']],
-                    data=[{'Data Table': "Loading"}],
+            dbc.Row([
+                dbc.Col([
+                    # Total Tuples Graph
+                    html.Div("Total Tuples Table"),
+                    dcc.Loading(
+                        dash_table.DataTable(
+                            id='total-tuples-table',
+                            columns=[{"name": i, "id": i} for i in ['Data Table']],
+                            data=[{'Data Table': "Loading"}],
+                        ),
+                    )],
                 ),
-            ),
-
-            html.Div(
-                [
-                    html.H5("Data Sources"),
-                    html.P(
-
-                        """Our listing data is sourced from Airbnb Global Listings, containing 
-                        information on more than 400,000 Airbnb listings worldwide.
-                        https://www.kaggle.com/datasets/joebeachcapital/airbnb
-            
-                        The Airbnb review data we use is sourced from Airbnb Listings & Reviews,
-                        containing data for 250,000+ listings across 10 major cities.
-                        https://www.kaggle.com/datasets/mysarahmadbhat/airbnb-listings-reviews
-            
-                        Both datasets are publicly available on Kaggle."""
+                dbc.Col(
+                    html.Div(
+                        [
+                            html.H5("Data Sources"),
+                            html.P([
+                                "Our listing data is sourced from ",
+                                html.A("Airbnb Global",
+                                       href="https://www.kaggle.com/datasets/joebeachcapital/airbnb",
+                                       className="link"),
+                                " Listings, containing information on more than 400,000 Airbnb listings worldwide.",
+                                html.Br(),
+                                "The Airbnb review data we use is sourced from ",
+                                html.A("Airbnb Listings",
+                                       href="https://www.kaggle.com/datasets/mysarahmadbhat/airbnb-listings-reviews",
+                                       className="link"),
+                                " & Reviews, containing data for 250,000+ listings across 10 major cities.",
+                                html.Br(),
+                                "Both datasets are publicly available on Kaggle."]
+                            ),
+                        ], className="summary2"
                     ),
-                ], className="summary"
-            ),
+                )
+            ]),
 
             html.Div(
                 [
                     html.H5("Contributors"),
                     html.P([
-
                         "Heather Burke",
                         html.Br(),
                         "Andrew Goldstein",
@@ -92,7 +99,6 @@ layout = dbc.Container(
                         "Bayron Najera",
                         html.Br(),
                         "Anthony Pallitta"
-
                     ]),
                 ], className="summary"
             ),
