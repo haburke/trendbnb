@@ -42,7 +42,7 @@ def get_config():
     cfg.read(cfg_dir/'config.ini')
     return cfg
 
-def db_query(query = None):
+def db_query(query = None, params = None):
     from config.cred import USERNAME, PASSWORD, HOST, SID
     username = USERNAME
     password = PASSWORD
@@ -60,8 +60,10 @@ def db_query(query = None):
         print("Successfully connected to the database.")
         if query is None:
             query = "SELECT COUNT(*) FROM Listing"
-        df = pd.read_sql(query, connection)
-        print(df)
+
+        df = pd.read_sql(query, connection, params=params)
+
+        return df
 
     except oracledb.DatabaseError as e:
         error, = e.args
